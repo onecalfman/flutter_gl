@@ -6,7 +6,7 @@ import 'package:flutter_gl/native-array/index.dart';
 import 'package:flutter_gl/openGL/opengl/OpenGL30Constant.dart';
 import 'package:flutter_gl/openGL/opengl-desktop/opengl.dart';
 
-getContext(Map<String, dynamic> parameters) {
+OpenGLContextDesktop getContext(Map<String, dynamic> parameters) {
   return OpenGLContextDesktop(parameters);
 }
 
@@ -130,8 +130,7 @@ class OpenGLContextDesktop extends OpenGL30Constant {
   }
 
   void texImage3D(int target, int level, int internalformat, int width,
-      int height,
-      int depth, int border, int format, int type, data) {
+      int height, int depth, int border, int format, int type, data) {
     if (data is NativeArray) {
       texImage3DNative(target, level, internalformat, width, height, depth,
           border, format, type, data);
@@ -224,16 +223,16 @@ class OpenGLContextDesktop extends OpenGL30Constant {
     return glPolygonOffset(v0, v1);
   }
 
-  stencilMask(v0) {
-    print(" OpenGL stencilMask ...  ");
+  void stencilMask(v0) {
+    print("[UNIMPLEMENTED] OpenGL stencilMask ...  ");
   }
 
-  stencilFunc(v0, v1, v2) {
-    print(" OpenGL stencilFunc ...  ");
+  void stencilFunc(v0, v1, v2) {
+    print("[UNIMPLEMENTED] OpenGL stencilFunc ...  ");
   }
 
-  stencilOp(v0, v1, v2) {
-    print(" OpenGL stencilOp ...  ");
+  void stencilOp(v0, v1, v2) {
+    print("[UNIMPLEMENTED] OpenGL stencilOp ...  ");
   }
 
   void clearStencil(int v0) {
@@ -290,12 +289,12 @@ class OpenGLContextDesktop extends OpenGL30Constant {
     return glTexParameterf(target, pname, param);
   }
 
-  pixelStorei(v0, v1) {
+  void pixelStorei(v0, v1) {
     return glPixelStorei(v0, v1);
   }
 
   getContextAttributes() {
-    return getContextAttributes();
+    return gl.getContextAttributes();
   }
 
   getProgramParameter(v0, v1) {
@@ -878,7 +877,7 @@ class OpenGLContextDesktop extends OpenGL30Constant {
   void texStorage3D(target, levels, internalformat, width, height, depth) {
     return glTexStorage3D(target, levels, internalformat, width, height, depth);
   }
-  
+
   void bindBufferBase(int target, int index, int buffer) {
     return glBindBufferBase(target, index, buffer);
   }
@@ -890,23 +889,27 @@ class OpenGLContextDesktop extends OpenGL30Constant {
     calloc.free(vPointer);
     return _v;
   }
+
   bindTransformFeedback(target, transformFeedback) {
     return gl.glBindTransformFeedback(target, transformFeedback);
   }
+
   transformFeedbackVaryings(program, count, List<String> varyings, bufferMode) {
     final varyingsPtr = calloc<Pointer<Int8>>(varyings.length);
 
     int i = 0;
-    for(final varying in varyings) {
+    for (final varying in varyings) {
       varyingsPtr[i] = varying.toNativeUtf8().cast<Int8>();
       i = i + 1;
     }
 
-    final result = gl.glTransformFeedbackVaryings(program, count, varyingsPtr, bufferMode);
+    final result =
+        gl.glTransformFeedbackVaryings(program, count, varyingsPtr, bufferMode);
     calloc.free(varyingsPtr);
 
     return result;
   }
+
   deleteTransformFeedback(int transformFeedback) {
     var _list = [transformFeedback];
     final ptr = calloc<Int32>(_list.length);
@@ -914,21 +917,27 @@ class OpenGLContextDesktop extends OpenGL30Constant {
     gl.glDeleteTransformFeedbacks(1, ptr);
     calloc.free(ptr);
   }
+
   isTransformFeedback(transformFeedback) {
     return gl.glIsTransformFeedback(transformFeedback);
   }
+
   beginTransformFeedback(primitiveMode) {
     return gl.glBeginTransformFeedback(primitiveMode);
   }
+
   endTransformFeedback() {
     return gl.glEndTransformFeedback();
   }
+
   pauseTransformFeedback() {
     return gl.glPauseTransformFeedback();
   }
+
   resumeTransformFeedback() {
     return gl.glResumeTransformFeedback();
   }
+
   getTransformFeedbackVarying(program, index) {
     int maxLen = 100;
     var length = calloc<Int32>();
@@ -936,7 +945,15 @@ class OpenGLContextDesktop extends OpenGL30Constant {
     var type = calloc<Uint32>();
     var name = calloc<Int8>(maxLen);
 
-    gl.glGetTransformFeedbackVarying(program, index, maxLen - 1, length, size, type, name);
+    gl.glGetTransformFeedbackVarying(
+      program,
+      index,
+      maxLen - 1,
+      length,
+      size,
+      type,
+      name,
+    );
 
     int _type = type.value;
     String _name = name.cast<Utf8>().toDartString();
@@ -950,7 +967,6 @@ class OpenGLContextDesktop extends OpenGL30Constant {
 
     return ActiveInfo(_type, _name, _size);
   }
-
 
   invalidateFramebuffer(target, attachments) {
     // TODO  Failed to lookup symbol 'glInvalidateFramebuffer'

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_gl/openGL/OpenGL-Base.dart';
 import 'package:flutter_gl_platform_interface/flutter_gl_platform_interface.dart';
 
 import 'openGL/OpenGL.dart';
@@ -17,7 +18,7 @@ export './native-array/index.dart';
 /// };
 /// await flutterGlPlugin.initialize(options: _options);
 class FlutterGlPlugin extends FlutterGlPlatform {
-  late dynamic openGL;
+  late OpenGLBase openGL;
 
   late List<int> egls;
 

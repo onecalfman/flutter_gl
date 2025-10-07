@@ -33,6 +33,9 @@ public class CustomRender: NSObject, FlutterTexture {
 
   var screenScale: Double;
   
+  // Dedicated serial queue for OpenGL operations
+  private static let renderQueue = DispatchQueue(label: "com.flutter_gl.render", qos: .userInteractive)
+  
   var options: Dictionary<String, Any>;
   
   init(options: Dictionary<String, Any>, renderToVideo: Bool, onNewFrame: @escaping newFrameBlock) {
@@ -45,7 +48,10 @@ public class CustomRender: NSObject, FlutterTexture {
     
     super.init();
 
-    self.setup();
+    // Initialize on render queue synchronously (like Android's executeSync)
+    CustomRender.renderQueue.sync {
+      self.setup()
+    }
   }
   
   
@@ -71,16 +77,65 @@ public class CustomRender: NSObject, FlutterTexture {
   }
   
   func updateTexture(sourceTexture: Int64) -> Bool {
-    CustomRender.eglEnv?.makeCurrent();
+    // Guard against disposed state
+    guard !disposed else {
+      print("CustomRender: Cannot update texture, already disposed")
+      return false
+    }
+    
+    // Use async dispatch to dedicated render queue (like Android's HandlerThread)
+    CustomRender.renderQueue.async { [weak self] in
+      self?.performTextureUpdate(sourceTexture: sourceTexture)
+    }
+    
+    return true
+  }
+  
+  private func performTextureUpdate(sourceTexture: Int64) {
+    guard !disposed else { return }
+    
+    // Verify worker exists
+    guard let worker = self.worker else {
+      print("CustomRender: worker is nil")
+      return
+    }
+    
+    // Make the context current and verify success
+    guard let eglEnv = CustomRender.eglEnv else {
+      print("CustomRender: eglEnv is nil")
+      return
+    }
+    
+    eglEnv.makeCurrent();
+    
+    // Verify the context is actually current
+    if EAGLContext.current() == nil {
+      print("CustomRender: Failed to make context current")
+      return
+    }
  
     glBindFramebuffer(GLenum(GL_FRAMEBUFFER), frameBuffer);
     
-    self.worker!.renderTexture(texture: GLuint(sourceTexture), matrix: nil, isFBO: false);
+    // Verify framebuffer is complete
+    let status = glCheckFramebufferStatus(GLenum(GL_FRAMEBUFFER))
+    if status != GL_FRAMEBUFFER_COMPLETE {
+      print("CustomRender: Framebuffer not complete: \(status)")
+      return
+    }
+    
+    // Clear the framebuffer before rendering (like Android does)
+    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))
+    
+    worker.renderTexture(texture: GLuint(sourceTexture), matrix: nil, isFBO: false);
 
     glFinish();
-    self.onNewFrame();
     
-    return true;
+    // Notify Flutter on main thread that frame is available
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self, !self.disposed else { return }
+      self.onNewFrame()
+    }
   }
   
   public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {

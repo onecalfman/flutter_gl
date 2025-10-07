@@ -8,7 +8,8 @@ import 'package:flutter_gl/openGL/opengl/OpenGLContextDesktop.dart';
 import 'OpenGL30Constant.dart';
 import 'opengl_es_bindings/src/gles_bindings.dart';
 
-getContext(Map<String, dynamic> parameters) {
+OpenGL30Constant
+getContext<T extends OpenGL30Constant>(Map<String, dynamic> parameters) {
   if (Platform.isWindows) {
     return OpenGLContextDesktop(parameters);
   } else {

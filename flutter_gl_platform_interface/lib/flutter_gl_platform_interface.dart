@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:flutter_gl/openGL/OpenGL-Base.dart';
 
 import 'method_channel_flutter_gl.dart';
 
@@ -27,7 +28,7 @@ abstract class FlutterGlPlatform extends PlatformInterface {
   bool isDisposed = false;
   bool get isInitialized => this.textureId != null;
 
-  late dynamic openGL;
+  late OpenGLBase openGL;
 
   late List<int> egls;
 
