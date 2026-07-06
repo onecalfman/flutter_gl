@@ -13,7 +13,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_gl:
-    path: ../
+    git:
+      url: ssh://git@github.com/onecalfman/flutter_gl.git
+      ref: HEAD
+      path: flutter_gl
   cupertino_icons: ^1.0.4
   path: ^1.8.0
   path_provider: ^2.0.9

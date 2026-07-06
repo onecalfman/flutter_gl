@@ -2,3 +2,4 @@
 .vscode
 .dart_tool/
 .DS_Store
+**/ios/Flutter/ephemeral/
