@@ -1,5 +1,6 @@
 .history
 .vscode
 .dart_tool/
+**/pubspec_overrides.yaml
 .DS_Store
 **/ios/Flutter/ephemeral/
